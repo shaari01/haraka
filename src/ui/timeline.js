@@ -191,7 +191,9 @@ export class Timeline {
     const ed = this.ed;
     const sk = ed.selectedKey;
     const selected = sk && sk.layerId === layer.id && Math.abs(sk.t - t) < 1e-4 && (summary ? !sk.prop || true : sk.prop === prop);
-    const d = h('div.key' + (summary ? '.summary' : '') + (selected ? '.selected' : ''), {
+    const kobj = prop ? layer.tracks[prop]?.find((k) => Math.abs(k.t - t) < 1e-4) : null;
+    const easeCls = kobj && kobj.ease && kobj.ease !== 'linear' ? (kobj.ease === 'hold' ? '.hold' : '.eased') : '';
+    const d = h('div.key' + (summary ? '.summary' : '') + (selected ? '.selected' : '') + easeCls, {
       style: { left: this.xOf(t) + 'px' },
       role: 'button',
       'aria-label': `مفتاح عند ${fmtTime(t, ed.project.fps)}`,

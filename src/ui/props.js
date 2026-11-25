@@ -43,7 +43,12 @@ export class PropsPanel {
     }
 
     const sec = h('section.sec', h('h3', 'الحركة والشكل'));
-    for (const k of visibleProps) sec.append(this.propRow(l, k));
+    const more = h('details.more', h('summary', 'الميل والضبابية والسطوع واللون'));
+    for (const k of visibleProps) (PROPS[k].group === 'look' ? more : sec).append(this.propRow(l, k));
+    if (more.children.length > 1) {
+      if (visibleProps.some((k) => PROPS[k].group === 'look' && l.tracks[k]?.length)) more.open = true;
+      sec.append(more);
+    }
     this.body.append(sec);
     for (const fn of propSections) { const el = fn(ed, l, this); if (el) this.body.append(el); }
 

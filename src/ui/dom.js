@@ -30,6 +30,13 @@ export function h(tag, attrs, ...children) {
 function append(el, children) {
   for (const c of children.flat(Infinity)) {
     if (c == null || c === false) continue;
+    if (typeof c === 'string' && c.startsWith('<svg')) {
+      // أيقونة SVG نصية تتحول إلى عنصر
+      const t = document.createElement('template');
+      t.innerHTML = c;
+      el.append(t.content);
+      continue;
+    }
     el.append(c instanceof Node ? c : document.createTextNode(String(c)));
   }
 }

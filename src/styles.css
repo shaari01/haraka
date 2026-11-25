@@ -213,3 +213,24 @@ input[type=checkbox] { width: 26px; height: 26px; accent-color: var(--accent); }
 @media (min-width: 900px) and (max-width: 1180px) {
   .workspace { grid-template-columns: 220px minmax(0, 1fr) 270px; }
 }
+
+/* المرحلة 2 */
+.ease-box .chips .chip { font-size: 13px; }
+.curve-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 10px; }
+.curve { border-radius: 12px; touch-action: none; direction: ltr; }
+.curve-wrap small { direction: ltr; }
+.mods { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.mod-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: center; background: var(--panel2); border-radius: 12px; padding: 8px; }
+.mod-row strong { grid-column: 1; }
+.mod-row .btn { grid-column: 2; grid-row: 1 / span 2; }
+.mod-ctl { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.mod-ctl .field { margin: 0; }
+.tl-mod { position: absolute; bottom: 1px; left: 14px; font-size: 11px; color: var(--accent2); pointer-events: none; white-space: nowrap; direction: rtl; }
+.tl-loop { position: absolute; top: 2px; right: 6px; font-size: 14px; color: var(--accent2); pointer-events: none; }
+.row { display: flex; align-items: center; gap: 8px; }
+.key.eased::after { border-radius: 50%; transform: none; }
+.key.hold::after { border-radius: 0; transform: none; }
+details.more { margin-top: 8px; }
+details.more > summary { min-height: var(--tap); display: flex; align-items: center; cursor: pointer; color: var(--accent2); font-size: 14px; list-style: none; }
+details.more > summary::before { content: '▸'; margin-inline-end: 8px; }
+details.more[open] > summary::before { content: '▾'; }
