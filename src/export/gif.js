@@ -14,7 +14,7 @@ export function gifDelays(count, fps) {
   return out;
 }
 
-export async function exportGif(project, { w, h, fps, cache, onProgress, signal, colors = 256, transparent = false, loop = 0 }) {
+export async function exportGif(project, { w, h, fps, cache, onProgress, signal, colors = 256, transparent = false, loop = 0, motionBlur = 0 }) {
   // GIF لا يُعرض جيدًا فوق 50 إطارًا/ث؛ المتصفحات تبطئ ما دون 2/100 ث
   const gfps = Math.min(fps, 50);
   const total = Math.max(1, Math.round(project.duration * gfps));
@@ -26,7 +26,7 @@ export async function exportGif(project, { w, h, fps, cache, onProgress, signal,
   const step = Math.max(1, Math.floor((nSamples * w * h) / 400000));
   const sample = new Uint8ClampedArray(Math.ceil((w * h) / step) * 4 * nSamples + 4);
   let k = 0, n = 0;
-  for await (const { canvas } of generateFrames(project, { fps: gfps, w, h, cache, signal, transparent, only })) {
+  for await (const { canvas } of generateFrames(project, { fps: gfps, w, h, cache, signal, transparent, only, motionBlur })) {
     const s = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
     for (let p = 0; p < s.length; p += 4 * step) { sample[k++] = s[p]; sample[k++] = s[p + 1]; sample[k++] = s[p + 2]; sample[k++] = s[p + 3]; }
     onProgress?.((++n / nSamples) * 0.15);
@@ -36,7 +36,7 @@ export async function exportGif(project, { w, h, fps, cache, onProgress, signal,
   const tIndex = transparent ? palette.findIndex((c) => c[3] === 0) : -1;
   // 2) الترميز إطارًا إطارًا دون تخزين كل الإطارات في الذاكرة
   const gif = GIFEncoder();
-  for await (const { canvas, i } of generateFrames(project, { fps: gfps, w, h, cache, signal, transparent })) {
+  for await (const { canvas, i } of generateFrames(project, { fps: gfps, w, h, cache, signal, transparent, motionBlur })) {
     const data = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
     const index = applyPalette(data, palette, format);
     gif.writeFrame(index, w, h, {

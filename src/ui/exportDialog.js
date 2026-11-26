@@ -2,6 +2,7 @@
 import { h, btn, modal, toast } from './dom.js';
 import { exportMp4, canExportMp4 } from '../export/mp4.js';
 import { sizeForResolution, downloadBlob } from '../export/frames.js';
+import { sendToInbox } from '../export/share.js';
 
 export const exportFormats = [
   {
@@ -75,6 +76,9 @@ export function openExportDialog(ed) {
       ed.lastExport = blob;
       const file = new File([blob], name, { type: blob.type || f.mime });
       const actions = [btn('import', 'تنزيل', () => downloadBlob(blob, name), { cls: 'primary', testid: 'download' })];
+      if (/^(video\/webm|image\/(gif|webp|png)|video\/mp4)$/.test(blob.type)) actions.push(btn('video', 'أرسل إلى برنامج الفيديو', async () => {
+        try { await sendToInbox({ name: p.name, blob, duration: p.duration }); toast('أُرسلت إلى صندوق برنامج الفيديو (مَشهد)'); } catch (e) { toast('تعذر الإرسال', 'error'); }
+      }, { testid: 'send-video' }));
       if (navigator.canShare?.({ files: [file] })) actions.push(btn('share', 'مشاركة (واتساب…)', () => navigator.share({ files: [file], title: p.name }).catch(() => {})));
       result.append(h('div.btn-row', actions));
       if (blob.type.startsWith('video/') || blob.type.startsWith('image/')) {

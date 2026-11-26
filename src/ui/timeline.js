@@ -210,7 +210,7 @@ export class Timeline {
         const dt = (ev.clientX - x0) / this.pps;
         if (!moved && Math.abs(ev.clientX - x0) < 6) return;
         moved = true;
-        const nt = Math.max(0, snapToFrame(t + dt, ed.project.fps));
+        let nt = Math.max(0, snapToFrame(t + dt, ed.project.fps)); if (this.snapTime) nt = this.snapTime(nt);
         d.style.left = this.xOf(nt) + 'px';
         d.dataset.nt = nt;
       };

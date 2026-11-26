@@ -1,5 +1,5 @@
 // مساحة المعاينة: عرض المشهد، واختيار العناصر وتحريكها بالإصبع أو الفأرة
-import { renderFrame, layerCorners } from '../core/renderer.js';
+import { renderFrame, layerCorners, fullMatrix, cameraAt } from '../core/renderer.js';
 import { getLayer, getAsset, evalLayer, worldMatrix, isLayerActive } from '../core/project.js';
 import { invert, apply, multiply, translate } from '../core/math.js';
 import { h } from './dom.js';
@@ -198,7 +198,7 @@ export class Stage {
       if (Math.hypot(hd.x - pt.sx, hd.y - pt.sy) <= hd.r * 1.8) {
         const l = ed.layer;
         const s = evalLayer(l, ed.time);
-        const m = worldMatrix(ed.project, l, ed.time);
+        const m = fullMatrix(ed.project, l, ed.time);
         const a = getAsset(ed.project, l.assetId);
         const [cx, cy] = apply(m, l.anchorX * (a?.width || 100), l.anchorY * (a?.height || 100));
         this.drag = { kind: hd.kind, layer: l, start: s, cx, cy, d0: Math.hypot(pt.x - cx, pt.y - cy), a0: Math.atan2(pt.y - cy, pt.x - cx) };
@@ -225,7 +225,10 @@ export class Stage {
     if (!d) return;
     const ed = this.ed;
     if (d.kind === 'move') {
-      const [dx, dy] = worldDeltaToParent(ed.project, d.layer, ed.time, pt.x - d.x0, pt.y - d.y0);
+      let ddx = pt.x - d.x0, ddy = pt.y - d.y0;
+      const cam = cameraAt(ed.project, ed.time);
+      if (cam) { const cm = cam.matrixFor(d.layer); [ddx, ddy] = apply(invert([cm[0], cm[1], cm[2], cm[3], 0, 0]), ddx, ddy); }
+      const [dx, dy] = worldDeltaToParent(ed.project, d.layer, ed.time, ddx, ddy);
       d.moved = true;
       ed.setProp(d.layer, 'x', round2(d.start.x + dx));
       ed.setProp(d.layer, 'y', round2(d.start.y + dy));

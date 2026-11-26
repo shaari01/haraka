@@ -4,14 +4,14 @@ import { icon } from '../ui/icons.js';
 import { stageTools } from '../ui/stage.js';
 import { toolbarTools } from '../ui/editor.js';
 import { propSections } from '../ui/props.js';
-import { registerDecorator } from '../core/renderer.js';
+import { registerDecorator, fullMatrix } from '../core/renderer.js';
 import { getAsset, worldMatrix, layerTime } from '../core/project.js';
 import { valueAt, setKey } from '../core/keyframes.js';
 import { invert, apply, multiply, uid } from '../core/math.js';
 import { buildMesh, drawMesh, flowField, segDist } from '../core/warp.js';
 import { renderCine, cineSupported } from '../core/cinegl.js';
 
-const toLocal = (ed, layer, pt) => apply(invert(worldMatrix(ed.project, layer, ed.time)), pt.x, pt.y);
+const toLocal = (ed, layer, pt) => apply(invert(fullMatrix(ed.project, layer, ed.time)), pt.x, pt.y);
 const isImage = (a) => a && (a.type === 'image' || a.type === 'svg');
 
 // ——— الصورة الحية ———
@@ -131,7 +131,7 @@ function drawCineOverlay(ctx, stage) {
   if (!l?.cine) return;
   const a = getAsset(ed.project, l.assetId);
   if (!a) return;
-  const m = multiply(stage.view, worldMatrix(ed.project, l, ed.time));
+  const m = multiply(stage.view, fullMatrix(ed.project, l, ed.time));
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   // القناع: لون أحمر شفاف فوق المجمَّد
@@ -219,7 +219,7 @@ stageTools.puppet = {
     const [x, y] = toLocal(ed, l, pt);
     // هل لمسنا دبوسًا (في مكانه المشوَّه)؟
     const pins = currentPins(l, ed.time);
-    const tol = 22 * stage.dpr / (Math.hypot(...stage.view.slice(0, 2)) * Math.hypot(...worldMatrix(ed.project, l, ed.time).slice(0, 2)));
+    const tol = 22 * stage.dpr / (Math.hypot(...stage.view.slice(0, 2)) * Math.hypot(...fullMatrix(ed.project, l, ed.time).slice(0, 2)));
     let hit = pins.find((p) => Math.hypot(p.x + p.dx - x, p.y + p.dy - y) < tol);
     if (!hit) {
       const p = { id: uid('pin').slice(0, 10), x: round(x), y: round(y) };
@@ -258,7 +258,7 @@ stageTools.puppet = {
     stage.drawSelection(ctx, true);
     const ed = stage.ed, l = ed.layer;
     if (!l?.puppet) return;
-    const m = multiply(stage.view, worldMatrix(ed.project, l, ed.time));
+    const m = multiply(stage.view, fullMatrix(ed.project, l, ed.time));
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
     for (const p of currentPins(l, ed.time)) {
       const [sx, sy] = apply(m, p.x + p.dx, p.y + p.dy);

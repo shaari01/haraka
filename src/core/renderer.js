@@ -7,6 +7,7 @@ const layerDecorators = []; // دوال تعدل طريقة رسم الطبقة 
 const sceneHooks = { camera: null, post: [] };
 
 export function registerLayerRenderer(type, fn) { layerRenderers.set(type, fn); }
+export const getLayerRenderer = (type) => layerRenderers.get(type);
 export function registerDecorator(fn) { layerDecorators.push(fn); }
 export function registerCamera(fn) { sceneHooks.camera = fn; }
 export function registerPost(fn) { sceneHooks.post.push(fn); }
@@ -116,10 +117,19 @@ export function drawLayer(ctx, project, layer, asset, s, m, t, opts) {
   ctx.restore();
 }
 
+export function cameraAt(project, t) { return sceneHooks.camera ? sceneHooks.camera(project, t) : null; }
+
+/** مصفوفة الطبقة كما تظهر في المشهد (مع الكاميرا والعمق) */
+export function fullMatrix(project, layer, t) {
+  const w = worldMatrix(project, layer, t);
+  const cam = cameraAt(project, t);
+  return cam ? multiply(cam.matrixFor(layer), w) : w;
+}
+
 /** صندوق الطبقة في إحداثيات المشروع (أربع زوايا) */
 export function layerCorners(project, layer, t) {
   const asset = getAsset(project, layer.assetId);
   const w = asset?.width || 100, h = asset?.height || 100;
-  const m = worldMatrix(project, layer, t);
+  const m = fullMatrix(project, layer, t);
   return [[0, 0], [w, 0], [w, h], [0, h]].map(([x, y]) => [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]]);
 }

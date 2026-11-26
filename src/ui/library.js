@@ -9,7 +9,7 @@ import { uid } from '../core/math.js';
 export const libraryCreators = []; // أزرار إنشاء عناصر خاصة (نص، جزيئات...) تضيفها المراحل اللاحقة
 export const importHandlers = []; // معالجات استيراد خاصة (مثل Lottie/مشروع طبقات)
 
-export const ACCEPT = 'image/*,.svg,video/*,audio/*,.mp3,.wav,.m4a,.ogg,.json';
+export const ACCEPT = 'image/*,.svg,video/*,audio/*,.mp3,.wav,.m4a,.ogg,.json,.zip';
 
 export class Library {
   constructor(ed) {

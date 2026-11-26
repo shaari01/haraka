@@ -248,3 +248,14 @@ textarea.text.area { min-height: 96px; padding: 10px 12px; font-size: 20px; line
 .text-preview { width: 100%; max-width: 600px; aspect-ratio: 3/1; border-radius: 12px; margin-top: 10px; }
 .fx-sec .seg { margin: 6px 0; }
 .fx-sec .field.row strong { font-size: 15px; }
+
+/* المرحلة 6 */
+.frame-strip { display: flex; gap: 6px; overflow-x: auto; padding: 6px 0; }
+.frame-th { flex: 0 0 auto; width: 64px; height: 48px; border: 2px solid var(--line, #333); border-radius: 8px; background: #fff; cursor: pointer; position: relative; }
+.frame-th canvas, .frame-th img { width: 100%; height: 100%; object-fit: contain; border-radius: 6px; }
+.frame-th.on { border-color: var(--accent, #f72585); box-shadow: 0 0 0 2px var(--accent, #f72585); }
+.audio-lane { position: relative; height: 44px; }
+.wave { pointer-events: none; opacity: .85; }
+.marker { position: absolute; top: 0; bottom: 0; width: 2px; background: #ffd166; transform: translateX(-1px); pointer-events: none; }
+.tl-camera .tl-label { color: #90e0ef; }
+.key.cam { background: #90e0ef; }

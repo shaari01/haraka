@@ -6,7 +6,7 @@ import { toolbarTools, editorPlugins, playbackHooks } from '../ui/editor.js';
 import { propSections, sceneSections } from '../ui/props.js';
 import { libraryCreators } from '../ui/library.js';
 import { evalHooks, getLayer, getAsset, worldMatrix, evalLayer, createAsset, createLayer } from '../core/project.js';
-import { registerLayerRenderer, drawLayer } from '../core/renderer.js';
+import { registerLayerRenderer, drawLayer, cameraAt } from '../core/renderer.js';
 import { getEase, EASES } from '../core/easing.js';
 import { simplify, smoothPath, pointAt, samplesToKeys } from '../core/path.js';
 import { invert, apply, multiply, translate, decompose, uid } from '../core/math.js';
@@ -25,12 +25,14 @@ evalHooks.unshift((layer, t, out) => {
 });
 
 /** مصفوفة فضاء الأم (لتحويل نقاط المشهد إلى إحداثيات الطبقة) */
-function parentSpace(project, layer, t) {
-  if (!layer.parentId) return [1, 0, 0, 1, 0, 0];
+function parentSpace(project, layer, t, withCamera = true) {
+  const cam = withCamera ? cameraAt(project, t) : null;
+  const C = cam ? cam.matrixFor(layer) : [1, 0, 0, 1, 0, 0];
+  if (!layer.parentId) return C;
   const parent = getLayer(project, layer.parentId);
-  if (!parent) return [1, 0, 0, 1, 0, 0];
+  if (!parent) return C;
   const pa = getAsset(project, parent.assetId);
-  return multiply(worldMatrix(project, parent, t), translate(parent.anchorX * (pa?.width || 100), parent.anchorY * (pa?.height || 100)));
+  return multiply(C, multiply(worldMatrix(project, parent, t), translate(parent.anchorX * (pa?.width || 100), parent.anchorY * (pa?.height || 100))));
 }
 
 // ——— أداة رسم المسار ———
@@ -207,7 +209,7 @@ export function reparent(project, layer, parentId, t) {
   const before = evalLayer(layer, t);
   const W = worldMatrix(project, layer, t);
   layer.parentId = parentId;
-  const P = parentSpace(project, layer, t);
+  const P = parentSpace(project, layer, t, false);
   const L = multiply(multiply(invert(P), W), translate(layer.anchorX * w, layer.anchorY * hh));
   const d = decompose(L);
   const delta = { x: d.x - before.x, y: d.y - before.y, rotation: d.rotation - before.rotation, scale: before.scale ? d.scale / before.scale : 1 };

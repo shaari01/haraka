@@ -1,11 +1,11 @@
 // تصدير WebP متحرك: يرمّز المتصفح كل إطار WebP ثابتًا، ثم نجمعها في ملف متحرك (RIFF/ANMF)
 import { generateFrames } from './frames.js';
 
-export async function exportWebp(project, { w, h, fps, cache, onProgress, signal, quality = 0.85, loop = 0, transparent = false }) {
+export async function exportWebp(project, { w, h, fps, cache, onProgress, signal, quality = 0.85, loop = 0, transparent = false, motionBlur = 0 }) {
   const frames = [];
   const dur = 1000 / fps;
   let acc = 0;
-  for await (const { canvas, i, total } of generateFrames(project, { fps, w, h, cache, signal, transparent })) {
+  for await (const { canvas, i, total } of generateFrames(project, { fps, w, h, cache, signal, transparent, motionBlur })) {
     const blob = await new Promise((r) => canvas.toBlob(r, 'image/webp', quality));
     if (!blob || blob.type !== 'image/webp') throw new Error('هذا المتصفح لا يرمّز WebP. استخدم Chrome أو Edge.');
     const bytes = new Uint8Array(await blob.arrayBuffer());
