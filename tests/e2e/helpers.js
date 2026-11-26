@@ -38,7 +38,7 @@ export async function importFile(page, file) {
   const chooser = page.waitForEvent('filechooser');
   await page.getByTestId('import').click();
   await (await chooser).setFiles(file);
-  await page.waitForFunction((n) => window.__editor?.ed.project.assets.length > n, before);
+  await page.waitForFunction((n) => window.__editor?.ed.project.assets.length > n && !window.__editor.ed.importing, before);
   if (isPhone && await page.locator('.library.open').count()) await page.locator('.library [data-testid=panel-close]').click();
 }
 

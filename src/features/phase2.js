@@ -5,6 +5,7 @@ import { keySections, propSections, setVisibleProps } from '../ui/props.js';
 import { exportFormats, exportOptionsExtras } from '../ui/exportDialog.js';
 import { EASES, EASE_IDS, getEase, easeBezier, easeLabel } from '../core/easing.js';
 import { KEY_PRESETS, MOD_TYPES, applyKeyPreset, registerMotion } from '../core/motion.js';
+import { isHidden } from './collection.js';
 import { PROP_KEYS } from '../core/project.js';
 import { findKeyIndex } from '../core/keyframes.js';
 import { exportGif } from '../export/gif.js';
@@ -123,6 +124,7 @@ propSections.unshift((ed, layer) => {
   const sec = h('section.sec', h('h3', icon('wand', 18), ' حركات جاهزة بضغطة'));
   const grid = h('div.chips');
   for (const [id, p] of Object.entries(KEY_PRESETS)) {
+    if (isHidden('preset', id)) continue;
     grid.append(h('button.chip', { type: 'button', dataset: { preset: id }, onclick: () => {
       ed.tryChange(p.label, () => applyKeyPreset(ed.layerById(layer.id), id, ed.time, ed.project), { group: 'preset' });
     } }, icon(p.icon, 18), p.label));
@@ -133,6 +135,7 @@ propSections.unshift((ed, layer) => {
   const modsBox = h('div.mods');
   const addRow = h('div.chips');
   for (const [type, m] of Object.entries(MOD_TYPES)) {
+    if (isHidden('mod', type)) continue;
     addRow.append(h('button.chip', { type: 'button', dataset: { mod: type }, onclick: () => {
       ed.tryChange(m.label, () => { (ed.layerById(layer.id).mods ||= []).push({ id: uid('mod'), type, amount: m.amount, speed: m.speed }); }, { group: 'mod' });
     } }, icon('plus', 18), m.label));

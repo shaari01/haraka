@@ -9,7 +9,7 @@ import { uid } from '../core/math.js';
 export const libraryCreators = []; // أزرار إنشاء عناصر خاصة (نص، جزيئات...) تضيفها المراحل اللاحقة
 export const importHandlers = []; // معالجات استيراد خاصة (مثل Lottie/مشروع طبقات)
 
-export const ACCEPT = 'image/*,.svg,video/*,audio/*,.mp3,.wav,.m4a,.ogg,.json,.zip';
+export const ACCEPT = 'image/*,.gif,.svg,video/*,audio/*,.mp3,.wav,.m4a,.ogg,.json,.zip';
 
 export class Library {
   constructor(ed) {
@@ -35,6 +35,8 @@ export class Library {
     files ||= await pickFiles(ACCEPT, true);
     if (!files?.length) return;
     let added = 0;
+    this.ed.importing = (this.ed.importing || 0) + 1;
+    try {
     for (const f of files) {
       try {
         let handled = false;
@@ -59,6 +61,7 @@ export class Library {
       }
     }
     if (added) { this.ed.commit(); toast(`أُضيف ${added} إلى المكتبة`); }
+    } finally { this.ed.importing--; }
   }
 
   addInstance(asset, commit = true) {
@@ -154,5 +157,5 @@ export class Library {
 }
 
 function typeLabel(a) {
-  return { image: 'صورة', svg: 'SVG', video: 'فيديو', audio: 'صوت', text: 'خط', comp: 'عنصر مركّب', drawing: 'رسم', particles: 'جزيئات', light: 'إضاءة', cinemagraph: 'صورة حية' }[a.type] || a.type;
+  return { image: 'صورة', svg: 'SVG', video: 'فيديو', audio: 'صوت', text: 'خط', comp: 'عنصر مركّب', drawing: 'رسم', particles: 'جزيئات', light: 'إضاءة', cinemagraph: 'صورة حية', gif: 'صورة متحركة' }[a.type] || a.type;
 }

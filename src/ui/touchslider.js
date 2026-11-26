@@ -44,3 +44,37 @@ export function installTouchSliders(root = document) {
   root.addEventListener('pointerup', end, true);
   root.addEventListener('pointercancel', end, true);
 }
+
+// أزرار − و + على طرفي كل شريط للضبط الدقيق بلمسة (كما في محرر فيديو سامسونج)
+const MINUS = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>';
+const PLUS = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+
+function stepBtn(r, dir, html, label) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'slider-step'; b.innerHTML = html; b.setAttribute('aria-label', label);
+  b.dataset.testid = dir > 0 ? 'slider-plus' : 'slider-minus';
+  b.addEventListener('click', () => {
+    const min = parseFloat(r.min || 0), max = parseFloat(r.max || 100);
+    const st = r.step && r.step !== 'any' ? parseFloat(r.step) : (max - min) / 100;
+    const v = Math.max(min, Math.min(max, Math.round((parseFloat(r.value) + dir * st) / st) * st));
+    r.value = +v.toFixed(6);
+    r.dispatchEvent(new Event('input', { bubbles: true }));
+    r.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  return b;
+}
+
+export function wrapSlider(r) {
+  if (r.dataset.stepped || r.closest('.slider-wrap') || r.dataset.nostep != null) return;
+  r.dataset.stepped = '1';
+  const w = document.createElement('div');
+  w.className = 'slider-wrap';
+  r.replaceWith(w);
+  w.append(stepBtn(r, -1, MINUS, 'إنقاص'), r, stepBtn(r, 1, PLUS, 'زيادة'));
+}
+
+export function installSliderSteppers(root = document.body) {
+  const scan = (el) => { if (el.matches?.('input[type=range]')) wrapSlider(el); for (const r of el.querySelectorAll?.('input[type=range]') || []) wrapSlider(r); };
+  scan(root);
+  new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1) scan(n); }).observe(root, { childList: true, subtree: true });
+}

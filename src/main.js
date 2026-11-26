@@ -9,8 +9,9 @@ import { requestPersist, loadProject } from './storage/db.js';
 import { migrate, worldMatrix, evalLayer } from './core/project.js';
 import { renderFrame } from './core/renderer.js';
 import { toast } from './ui/dom.js';
-import { installTouchSliders } from './ui/touchslider.js';
+import { installTouchSliders, installSliderSteppers } from './ui/touchslider.js';
 installTouchSliders();
+installSliderSteppers();
 import './features/index.js';
 
 const root = document.getElementById('app');
