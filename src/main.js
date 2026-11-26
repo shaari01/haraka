@@ -7,6 +7,7 @@ import { renderHome } from './ui/home.js';
 import { Editor } from './ui/editor.js';
 import { requestPersist, loadProject } from './storage/db.js';
 import { migrate, worldMatrix, evalLayer } from './core/project.js';
+import { renderFrame } from './core/renderer.js';
 import { toast } from './ui/dom.js';
 import './features/index.js';
 
@@ -20,7 +21,7 @@ function openProject(p) {
   root.append(editor.el);
   history.replaceState(null, '', '#p=' + p.id);
   window.__editor = editor; // للاختبارات الآلية
-  window.__nabd = { worldMatrix, evalLayer };
+  window.__nabd = { worldMatrix, evalLayer, renderFrame };
 }
 
 async function start() {

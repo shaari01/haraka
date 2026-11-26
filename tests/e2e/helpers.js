@@ -33,11 +33,12 @@ export async function newProject(page, { size = '1:1' } = {}) {
 
 export async function importFile(page, file) {
   const isPhone = (page.viewportSize()?.width || 1000) < 900;
-  if (isPhone) await page.getByTestId('m-library').click();
+  const before = await page.evaluate(() => window.__editor?.ed.project.assets.length || 0);
+  if (isPhone && !(await page.locator('.library.open').count())) await page.getByTestId('m-library').click();
   const chooser = page.waitForEvent('filechooser');
   await page.getByTestId('import').click();
   await (await chooser).setFiles(file);
-  await page.waitForFunction(() => window.__editor?.ed.project.assets.length > 0);
+  await page.waitForFunction((n) => window.__editor?.ed.project.assets.length > n, before);
   if (isPhone && await page.locator('.library.open').count()) await page.locator('.library [data-testid=panel-close]').click();
 }
 
@@ -49,3 +50,16 @@ export async function closePanels(page) {
 }
 
 export const ed = (page, fn, arg) => page.evaluate(new Function('arg', `const ed = window.__editor.ed; return (${fn})(ed, arg);`), arg);
+
+/** نسبة البكسلات المرسومة (غير الشفافة) في إطار عند الزمن t بخلفية شفافة */
+export async function coverage(page, t) {
+  return page.evaluate((t) => {
+    const ed = window.__editor.ed, p = ed.project;
+    const c = document.createElement('canvas'); c.width = 270; c.height = Math.round(270 * p.height / p.width);
+    const g = c.getContext('2d', { willReadFrequently: true });
+    window.__nabd.renderFrame(g, { ...p, background: null }, t, { cache: ed.cache, transparent: true });
+    const d = g.getImageData(0, 0, c.width, c.height).data;
+    let n = 0; for (let i = 3; i < d.length; i += 4) if (d[i] > 20) n++;
+    return n / (c.width * c.height);
+  }, t);
+}
