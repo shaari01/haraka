@@ -28,7 +28,7 @@ export class Stage {
     this.canvas.addEventListener('pointerup', (e) => this.onUp(e));
     this.canvas.addEventListener('pointercancel', (e) => this.onUp(e));
     this.canvas.addEventListener('wheel', (e) => this.onWheel(e), { passive: false });
-    for (const ev of ['change', 'time', 'select', 'render']) ed.on(ev, () => this.invalidate());
+    for (const ev of ['change', 'time', 'select', 'render', 'tool']) ed.on(ev, () => this.invalidate());
     const loop = () => { if (this.dirty) { this.dirty = false; this.draw(); } this.raf = requestAnimationFrame(loop); };
     this.raf = requestAnimationFrame(loop);
   }
@@ -128,13 +128,18 @@ export class Stage {
     if (!l || l.locked) return [];
     const pts = layerCorners(this.ed.project, l, this.ed.time).map(([x, y]) => apply(this.view, x, y));
     const r = 13 * this.dpr;
-    const out = pts.map(([x, y], i) => ({ x, y, r, kind: 'scale', i }));
+    // العناصر الصغيرة على الشاشة: أبعد المقابض عن المركز حتى يبقى العنصر قابلًا للسحب
+    const ccx = (pts[0][0] + pts[2][0]) / 2, ccy = (pts[0][1] + pts[2][1]) / 2;
+    const minD = 46 * this.dpr;
+    const spread = ([x, y]) => { const dx = x - ccx, dy = y - ccy, d = Math.hypot(dx, dy) || 1; return d >= minD ? [x, y] : [ccx + dx / d * minD, ccy + dy / d * minD]; };
+    const out = pts.map((p0, i) => { const [x, y] = spread(p0); return { x, y, r, kind: 'scale', i }; });
     // مقبض الدوران فوق منتصف الحافة العليا
     const [a, b] = [pts[0], pts[1]];
     const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
     const cx = (pts[0][0] + pts[2][0]) / 2, cy = (pts[0][1] + pts[2][1]) / 2;
     let dx = mx - cx, dy = my - cy; const d = Math.hypot(dx, dy) || 1;
-    out.push({ x: mx + (dx / d) * 40 * this.dpr, y: my + (dy / d) * 40 * this.dpr, r, kind: 'rotate' });
+    const far = Math.max(d, minD) + 40 * this.dpr;
+    out.push({ x: cx + (dx / d) * far, y: cy + (dy / d) * far, r, kind: 'rotate' });
     return out;
   }
 

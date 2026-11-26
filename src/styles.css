@@ -208,6 +208,8 @@ input[type=checkbox] { width: 26px; height: 26px; accent-color: var(--accent); }
   .topbar .btn.primary { width: var(--tap); padding: 0; }
   .timeline { height: 42vh; }
   .tl-name { width: 128px; }
+  .tl-transport { gap: 4px; padding: 0 4px 6px; }
+  .tl-time { min-width: 0; font-size: 13px; }
   .size-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (min-width: 900px) and (max-width: 1180px) {
@@ -234,3 +236,9 @@ details.more { margin-top: 8px; }
 details.more > summary { min-height: var(--tap); display: flex; align-items: center; cursor: pointer; color: var(--accent2); font-size: 14px; list-style: none; }
 details.more > summary::before { content: '▸'; margin-inline-end: 8px; }
 details.more[open] > summary::before { content: '▾'; }
+
+/* المرحلة 3 */
+.comp-banner { position: absolute; top: 8px; right: 8px; left: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 12px; background: rgba(76,201,240,.18); border: 1px solid var(--accent2); border-radius: 12px; backdrop-filter: blur(6px); z-index: 5; }
+.toolbar .btn.active[data-testid="tool-perform"] { background: var(--rec); color: #fff; }
+
+@media (max-width: 600px) { .tl-zoom { display: none !important; } }

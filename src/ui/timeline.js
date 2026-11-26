@@ -52,8 +52,8 @@ export class Timeline {
       this.timeLabel,
       h('span.grow'),
       this.keyBtn,
-      btn('zoomOut', 'تصغير', () => this.zoomBy(1 / 1.4), { iconOnly: true }),
-      btn('zoomIn', 'تكبير', () => this.zoomBy(1.4), { iconOnly: true }),
+      btn('zoomOut', 'تصغير', () => this.zoomBy(1 / 1.4), { iconOnly: true, cls: 'tl-zoom' }),
+      btn('zoomIn', 'تكبير', () => this.zoomBy(1.4), { iconOnly: true, cls: 'tl-zoom' }),
       btn('chevronDown', 'طي الخط الزمني', () => this.toggleCollapse(), { iconOnly: true, cls: 'collapse-btn', testid: 'tl-collapse' })
     );
     this.updateTransport();

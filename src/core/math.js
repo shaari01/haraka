@@ -52,3 +52,11 @@ export function lerpColor(a, b, p) {
 }
 
 export const uid = (p = 'id') => p + '_' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+
+/** تفكيك مصفوفة إلى موضع ودوران وحجم (بلا ميل) */
+export function decompose(m) {
+  const sx = Math.hypot(m[0], m[1]);
+  const det = m[0] * m[3] - m[1] * m[2];
+  const sy = sx ? det / sx : 0;
+  return { x: m[4], y: m[5], rotation: Math.atan2(m[1], m[0]) * 180 / Math.PI, scaleX: sx, scaleY: sy, scale: (Math.abs(sx) + Math.abs(sy)) / 2 };
+}

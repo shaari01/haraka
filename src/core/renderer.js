@@ -90,7 +90,7 @@ export function drawLayer(ctx, project, layer, asset, s, m, t, opts) {
   };
 
   ctx.save();
-  ctx.globalAlpha = Math.max(0, Math.min(1, s.opacity));
+  ctx.globalAlpha = Math.max(0, Math.min(1, s.opacity)) * (opts.alphaMul ?? 1);
   if (layer.blend && layer.blend !== 'normal') ctx.globalCompositeOperation = layer.blend;
   if (!tinted) {
     ctx.filter = filters.length ? filters.join(' ') : 'none';
