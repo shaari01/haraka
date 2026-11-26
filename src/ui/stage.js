@@ -97,7 +97,7 @@ export class Stage {
     else this.drawSelection(ctx);
   }
 
-  drawSelection(ctx) {
+  drawSelection(ctx, outlineOnly = false) {
     const l = this.ed.layer;
     if (!l || !l.visible) return;
     const pts = layerCorners(this.ed.project, l, this.ed.time).map(([x, y]) => apply(this.view, x, y));
@@ -109,7 +109,7 @@ export class Stage {
     pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
     ctx.closePath();
     ctx.stroke();
-    const hs = this.handles();
+    const hs = outlineOnly ? [] : this.handles();
     for (const hd of hs) {
       ctx.beginPath();
       ctx.arc(hd.x, hd.y, hd.r, 0, Math.PI * 2);

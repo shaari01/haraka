@@ -115,7 +115,7 @@ export class Timeline {
   }
 
   rowsFor(layer) {
-    const keyed = PROP_KEYS.filter((k) => layer.tracks[k]?.length);
+    const keyed = Object.keys(layer.tracks).filter((k) => layer.tracks[k]?.length);
     const base = PHASE1_PROPS.filter((k) => !keyed.includes(k));
     return [...keyed, ...base];
   }
@@ -158,7 +158,7 @@ export class Timeline {
       lane.append(h('div.tl-bar', { style: { left: this.xOf(s) + 'px', width: Math.max(2, (e - s) * this.pps) + 'px' } }));
       // كل المفاتيح في صف الملخص
       const times = new Map();
-      for (const k of PROP_KEYS) for (const key of layer.tracks[k] || []) times.set(key.t.toFixed(4), key.t);
+      for (const k of Object.keys(layer.tracks)) for (const key of layer.tracks[k] || []) times.set(key.t.toFixed(4), key.t);
       for (const t of times.values()) lane.append(this.diamond(layer, null, t, true));
       for (const dec of laneDecorators) dec(lane, layer, this);
       this.laneClick(lane, layer);
@@ -176,7 +176,7 @@ export class Timeline {
           const plane = h('div.tl-lane', { style: { width: laneW + 'px' } });
           for (const key of layer.tracks[prop] || []) plane.append(this.diamond(layer, prop, key.t, false));
           this.laneClick(plane, layer);
-          prow.append(plane, h('div.tl-name.sub', PROPS[prop]?.label || prop));
+          prow.append(plane, h('div.tl-name.sub', trackLabel(layer, prop)));
           this.inner.append(prow);
         }
       }
@@ -220,7 +220,7 @@ export class Timeline {
         d.removeEventListener('pointercancel', onUp);
         if (moved && d.dataset.nt != null) {
           const nt = parseFloat(d.dataset.nt);
-          const props = prop ? [prop] : PROP_KEYS;
+          const props = prop ? [prop] : Object.keys(layer.tracks);
           for (const pr of props) {
             const tr = layer.tracks[pr];
             if (!tr) continue;
@@ -274,4 +274,14 @@ function niceStep(pps) {
 function formatTick(t, step) {
   if (step >= 1) return Math.round(t) + 'ث';
   return (Math.round(t * 100) / 100).toString();
+}
+
+export function trackLabel(layer, prop) {
+  if (PROPS[prop]) return PROPS[prop].label;
+  const m = prop.match(/^pin_(.+)_(x|y)$/);
+  if (m) {
+    const i = (layer.puppet?.pins || []).findIndex((p) => p.id === m[1]);
+    return `دبوس ${i + 1} ${m[2] === 'x' ? 'أفقي' : 'رأسي'}`;
+  }
+  return prop;
 }

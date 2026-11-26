@@ -2,3 +2,4 @@
 import './phase2.js';
 import './phase3.js';
 import './phase4.js';
+import './phase5.js';

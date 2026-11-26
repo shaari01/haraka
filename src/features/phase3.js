@@ -61,7 +61,7 @@ stageTools.path = {
     toast('سيسير العنصر على المسار. عدّل التوقيت من «الخصائص»');
   },
   overlay(ctx, stage) {
-    stage.drawSelection(ctx);
+    stage.drawSelection(ctx, true);
     if (stage.drawing) {
       ctx.save();
       ctx.setTransform(...stage.view);
@@ -114,7 +114,7 @@ stageTools.perform = {
   move(e, pt, stage) { if (stage.rec) stage.rec.last = pt; },
   up(e, pt, stage) { finishRecording(stage); },
   overlay(ctx, stage) {
-    stage.drawSelection(ctx);
+    stage.drawSelection(ctx, true);
     if (stage.rec) {
       ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.fillStyle = '#ff3b4e';
