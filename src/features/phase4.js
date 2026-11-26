@@ -442,12 +442,16 @@ propSections.splice(1, 0, (ed, layer) => {
   const fx = layer.fx ||= {};
   const sec = h('section.sec.fx-sec', h('h3', icon('text', 18), ' تحريك الخط'));
   const commit = () => { ed.commit(); ed.emit('select'); };
+  // معاينة قبل الاعتماد: التعديل على نسخة الطبقة الحالية في المشروع
+  const tryFx = (label, mut, group) => ed.tryChange(label, () => { const L = ed.layerById(layer.id); mut(L.fx ||= {}); }, { group: group || label });
   const toggle = (key, label, defaults, testid) => {
     const on = !!fx[key]?.on;
     const cb = h('input', { type: 'checkbox', checked: on, 'data-testid': testid, onchange: () => {
-      fx[key] = { ...defaults, ...(fx[key] || {}), on: cb.checked };
-      if (cb.checked && fx[key].start == null) fx[key].start = ed.time;
-      commit();
+      const v = cb.checked;
+      tryFx(label, (f) => {
+        f[key] = { ...defaults, ...(f[key] || {}), on: v };
+        if (v && f[key].start == null) f[key].start = ed.time;
+      });
     } });
     return h('label.field.row', cb, h('strong', label));
   };
@@ -461,10 +465,10 @@ propSections.splice(1, 0, (ed, layer) => {
   sec.append(toggle('write', 'الكتابة الحية', { mode: 'pen', dur: 2, anim: 'rise', ease: 'easeInOut' }, 'fx-write'));
   if (fx.write?.on) {
     const wr = fx.write;
-    const modes = h('div.seg', [['pen', 'بالقلم'], ['letters', 'حرفًا حرفًا']].map(([id, l]) => h('button', { type: 'button', 'aria-pressed': (wr.mode || 'pen') === id, dataset: { wmode: id }, onclick: () => { wr.mode = id; commit(); } }, l)));
+    const modes = h('div.seg', [['pen', 'بالقلم'], ['letters', 'حرفًا حرفًا']].map(([id, l]) => h('button', { type: 'button', 'aria-pressed': (wr.mode || 'pen') === id, dataset: { wmode: id }, onclick: () => tryFx(l, (f) => { f.write.mode = id; }, 'wmode') }, l)));
     sec.append(modes, h('div.mod-ctl', num(wr, 'start', 'يبدأ (ث)'), num(wr, 'dur', 'المدة (ث)')), startHere(wr));
     if (wr.mode === 'letters') {
-      sec.append(h('div.chips', Object.entries(LETTER_ANIMS).map(([id, l]) => h('button.chip', { type: 'button', 'aria-pressed': (wr.anim || 'rise') === id, dataset: { lanim: id }, onclick: () => { wr.anim = id; commit(); } }, l))));
+      sec.append(h('div.chips', Object.entries(LETTER_ANIMS).map(([id, l]) => h('button.chip', { type: 'button', 'aria-pressed': (wr.anim || 'rise') === id, dataset: { lanim: id }, onclick: () => tryFx(l, (f) => { f.write.anim = id; }, 'lanim') }, l))));
     }
     sec.append(h('p.muted', asset.type === 'svg' ? 'في SVG يسير القلم على حدود الأشكال من اليمين إلى اليسار.' : 'يُكشف الخط من اليمين إلى اليسار باتجاه الكتابة.'));
   }
@@ -485,8 +489,8 @@ propSections.splice(1, 0, (ed, layer) => {
   if (others.length) {
     const mo = fx.morph || {};
     const sel = h('select', { 'aria-label': 'يتحوّل إلى', 'data-testid': 'fx-morph', onchange: () => {
-      if (!sel.value) delete fx.morph; else fx.morph = { ...mo, toAssetId: sel.value, start: mo.start ?? ed.time, dur: mo.dur || 1.5 };
-      commit();
+      const v = sel.value;
+      tryFx('التحوّل', (f) => { if (!v) delete f.morph; else f.morph = { ...mo, toAssetId: v, start: mo.start ?? ed.time, dur: mo.dur || 1.5 }; });
     } }, h('option', { value: '' }, '— بلا تحوّل —'), others.map((a) => h('option', { value: a.id, selected: mo.toAssetId === a.id }, a.name)));
     sec.append(h('label.field', h('strong', 'التحوّل إلى شكل آخر (Morph)'), sel));
     if (fx.morph) sec.append(h('div.mod-ctl', num(fx.morph, 'start', 'يبدأ (ث)'), num(fx.morph, 'dur', 'المدة (ث)')), startHere(fx.morph),

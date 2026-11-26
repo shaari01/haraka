@@ -37,7 +37,7 @@ keySections.push((ed, layer, sk) => {
   const chips = h('div.chips', { role: 'group', 'aria-label': 'منحنى السرعة' });
   for (const id of EASE_IDS) {
     const c = h('button.chip', { type: 'button', 'aria-pressed': cur === id, dataset: { ease: id } }, easeIcon(id), EASES[id].label);
-    c.addEventListener('click', () => { for (const k of keys) k.ease = id; ed.commit(); ed.emit('select'); });
+    c.addEventListener('click', () => ed.tryChange('منحنى ' + EASES[id].label, () => { for (const k of selectedKeys(ed.layerById(layer.id), ed.selectedKey)) k.ease = id; }, { group: 'ease' }));
     chips.append(c);
   }
   box.append(chips);
@@ -124,10 +124,8 @@ propSections.unshift((ed, layer) => {
   const grid = h('div.chips');
   for (const [id, p] of Object.entries(KEY_PRESETS)) {
     grid.append(h('button.chip', { type: 'button', dataset: { preset: id }, onclick: () => {
-      applyKeyPreset(layer, id, ed.time, ed.project);
-      ed.commit();
-      toast(`أُضيفت «${p.label}» عند ${ed.time.toFixed(2)} ث، ويمكنك تعديل مفاتيحها`);
-    } }, icon(p.icon, 20), p.label));
+      ed.tryChange(p.label, () => applyKeyPreset(ed.layerById(layer.id), id, ed.time, ed.project), { group: 'preset' });
+    } }, icon(p.icon, 18), p.label));
   }
   sec.append(h('p.muted', 'تُضاف كمفاتيح عند المؤشر الزمني:'), grid);
 
@@ -136,8 +134,7 @@ propSections.unshift((ed, layer) => {
   const addRow = h('div.chips');
   for (const [type, m] of Object.entries(MOD_TYPES)) {
     addRow.append(h('button.chip', { type: 'button', dataset: { mod: type }, onclick: () => {
-      (layer.mods ||= []).push({ id: uid('mod'), type, amount: m.amount, speed: m.speed });
-      ed.commit(); ed.emit('select');
+      ed.tryChange(m.label, () => { (ed.layerById(layer.id).mods ||= []).push({ id: uid('mod'), type, amount: m.amount, speed: m.speed }); }, { group: 'mod' });
     } }, icon('plus', 18), m.label));
   }
   for (const m of layer.mods || []) modsBox.append(modRow(ed, layer, m));
@@ -147,9 +144,7 @@ propSections.unshift((ed, layer) => {
   const lp = layer.loop || { mode: 'none', count: 0 };
   const modes = [['none', 'مرة واحدة'], ['loop', 'تكرار (حلقة)'], ['pingpong', 'ذهاب وإياب']];
   const seg = h('div.seg', { role: 'group', 'aria-label': 'التكرار' }, modes.map(([id, label]) => h('button', { type: 'button', 'aria-pressed': lp.mode === id, dataset: { loop: id }, onclick: () => {
-    layer.loop = { mode: id, count: lp.count || 0 };
-    if (id === 'none') delete layer.loop;
-    ed.commit(); ed.emit('select');
+    ed.tryChange(label, () => { const L = ed.layerById(layer.id); if (id === 'none') delete L.loop; else L.loop = { mode: id, count: lp.count || 0 }; }, { group: 'loop' });
   } }, label)));
   const count = h('input.num', { type: 'number', min: 0, max: 999, value: lp.count || 0, 'aria-label': 'عدد مرات التكرار (0 = بلا نهاية)', onchange: () => { if (layer.loop) { layer.loop.count = Math.max(0, parseInt(count.value) || 0); ed.commit(); } } });
   sec.append(h('h3', icon('loop', 18), ' تكرار الحركة'), seg);

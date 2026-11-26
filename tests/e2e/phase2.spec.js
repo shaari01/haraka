@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
-import { makePng, newProject, importFile, ed } from './helpers.js';
+import { makePng, newProject, importFile, ed, accept } from './helpers.js';
 
 async function openProps(page) {
   if ((page.viewportSize()?.width || 1000) < 900 && !(await page.locator('.props.open').count())) await page.getByTestId('m-props').click();
@@ -28,15 +28,23 @@ test('المرحلة 2: منحنيات السرعة، والحركات الجا�
   await openProps(page);
 
   // حركة جاهزة بالمفاتيح
+  // معاينة قبل الاعتماد: ✕ يلغي، و✓ يعتمد
   await page.locator('[data-preset="fadeIn"]').click();
+  await expect(page.getByTestId('trial-bar')).toBeVisible();
+  expect(await ed(page, (e) => e.playing)).toBe(true);
+  await page.getByTestId('try-cancel').click();
+  await expect(page.getByTestId('trial-bar')).toBeHidden();
+  expect(await ed(page, (e) => [e.playing, e.project.layers[0].tracks.opacity?.length || 0, e.history.canUndo()])).toEqual([false, 0, true]);
+  await page.locator('[data-preset="fadeIn"]').click(); await accept(page);
+  await expect(page.getByTestId('trial-bar')).toBeHidden();
   expect(await ed(page, (e) => e.project.layers[0].tracks.opacity.length)).toBe(2);
   // اختيار المفتاح الأول وتغيير منحنى السرعة إلى ارتداد
   await ed(page, (e) => { const l = e.project.layers[0]; e.selectKey({ layerId: l.id, prop: 'opacity', t: 0 }); });
-  await page.locator('[data-ease="bounce"]').click();
+  await page.locator('[data-ease="bounce"]').click(); await accept(page);
   expect(await ed(page, (e) => e.project.layers[0].tracks.opacity[0].ease)).toBe('bounce');
   // محرر المنحنى: سحب مقبض يحوّله إلى منحنى مخصص
   const c = page.locator('canvas.curve');
-  await page.locator('[data-ease="easeInOut"]').click();
+  await page.locator('[data-ease="easeInOut"]').click(); await accept(page);
   await c.scrollIntoViewIfNeeded();
   const b = await c.boundingBox();
   await page.mouse.move(b.x + b.width * 0.35, b.y + b.height * 0.85);
@@ -48,8 +56,8 @@ test('المرحلة 2: منحنيات السرعة، والحركات الجا�
 
   // حركة مستمرة وحلقة
   await ed(page, (e) => e.selectKey(null));
-  await page.locator('[data-mod="pulse"]').click();
-  await page.locator('[data-loop="pingpong"]').click();
+  await page.locator('[data-mod="pulse"]').click(); await accept(page);
+  await page.locator('[data-loop="pingpong"]').click(); await accept(page);
   expect(await ed(page, (e) => [e.project.layers[0].mods.length, e.project.layers[0].loop.mode])).toEqual([1, 'pingpong']);
   await page.screenshot({ path: info.outputPath('phase2.png') });
 

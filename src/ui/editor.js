@@ -57,7 +57,24 @@ export class Editor {
       btn('fit', 'ملاءمة', () => this.stage.fit(), {})
     );
     this.scrim = h('div.scrim', { onclick: () => this.closePanels(), 'aria-hidden': 'true' });
-    const center = h('main.center', this.toolbar, this.stage.el, this.mobileBar);
+    // شريط المعاينة كما في فيفافيديو: ✕ إلغاء يمينًا، و✓ اعتماد يسارًا
+    this.trialLabel = h('span.trial-label');
+    this.trialBar = h('div.trial-bar', { hidden: true, 'data-testid': 'trial-bar' },
+      btn('close', '', () => ed.cancelTry(), { iconOnly: true, cls: 'cancel', testid: 'try-cancel', title: 'إلغاء' }),
+      this.trialLabel,
+      btn('check', '', () => ed.acceptTry(), { iconOnly: true, cls: 'ok', testid: 'try-ok', title: 'اعتماد' }));
+    ed.on('trial', () => {
+      this.trialBar.hidden = !ed.trial;
+      if (ed.trial) {
+        this.trialLabel.textContent = 'معاينة: ' + ed.trial.label;
+        // على الجوال: أخفِ اللوحة لتظهر المعاينة وزرّا ✓ و✕، ثم أعدها بعد القرار
+        const open = ['library', 'props'].find((w) => (w === 'library' ? this.library.el : this.props.el).classList.contains('open'));
+        if (open && window.matchMedia('(max-width: 899px)').matches) { this.reopenAfterTrial = open; this.closePanels(); }
+      } else if (this.reopenAfterTrial) { const w = this.reopenAfterTrial; this.reopenAfterTrial = null; this.togglePanel(w); }
+    });
+    ed.on('trial-play', () => { this.stop(); this.play(); });
+    ed.on('trial-stop', () => this.stop());
+    const center = h('main.center', this.toolbar, this.stage.el, this.trialBar, this.mobileBar);
     this.workspace = h('div.workspace', this.library.el, center, this.props.el, this.scrim);
     for (const panel of [this.library, this.props]) {
       panel.el.querySelector('.panel-head').append(btn('close', 'إغلاق', () => this.closePanels(), { iconOnly: true, cls: 'panel-close', testid: 'panel-close' }));

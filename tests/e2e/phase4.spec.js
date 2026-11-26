@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { newProject, importFile, ed, coverage, openLibrary, closePanels } from './helpers.js';
+import { newProject, importFile, ed, coverage, openLibrary, closePanels, accept } from './helpers.js';
 
 const svgA = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><path d="M360 60 C300 160 200 160 150 90 L140 100 C200 190 320 180 375 70 Z" fill="#1d3557"/><circle cx="90" cy="100" r="35" fill="#1d3557"/><path d="M40 40 h20 v120 h-20z" fill="#1d3557"/></svg>`;
 const svgB = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><rect x="40" y="40" width="320" height="120" rx="60" fill="#e63946"/></svg>`;
@@ -27,7 +27,7 @@ test('المرحلة 4: الخط العربي — كتابة حية، وحرفً
   // الكتابة الحية بالقلم
   await ed(page, (e) => e.setTime(0));
   await openProps(page);
-  await page.getByTestId('fx-write').check();
+  await page.getByTestId('fx-write').click(); await accept(page);
   const full = await coverage(page, 3);
   const mid = await coverage(page, 1);
   const none = await coverage(page, 0);
@@ -37,16 +37,16 @@ test('المرحلة 4: الخط العربي — كتابة حية، وحرفً
   expect(mid).toBeLessThan(full);
 
   // حرفًا حرفًا
-  await page.locator('[data-wmode="letters"]').click();
-  await page.locator('[data-lanim="pop"]').click();
+  await page.locator('[data-wmode="letters"]').click(); await accept(page);
+  await page.locator('[data-lanim="pop"]').click(); await accept(page);
   const lmid = await coverage(page, 0.9);
   expect(lmid).toBeGreaterThan(0);
   expect(lmid).toBeLessThan(full * 1.05);
   expect(await coverage(page, 3)).toBeGreaterThan(full * 0.9);
 
   // لمعان وتوهج
-  await page.getByTestId('fx-shine').check();
-  await page.getByTestId('fx-glow').check();
+  await page.getByTestId('fx-shine').click(); await accept(page);
+  await page.getByTestId('fx-glow').click(); await accept(page);
   const glow = await coverage(page, 3);
   expect(glow).toBeGreaterThan(full); // التوهج يوسع المساحة المرسومة
   await ed(page, (e) => e.setTime(2.5));
@@ -58,14 +58,14 @@ test('المرحلة 4: الخط العربي — كتابة حية، وحرفً
   await importFile(page, { name: 'شكل.svg', mimeType: 'image/svg+xml', buffer: Buffer.from(svgB) });
   await ed(page, (e) => { e.project.layers = e.project.layers.filter((l) => e.project.assets.find((a) => a.id === l.assetId).name === 'حرف'); e.select(e.project.layers[0].id); e.setTime(0); e.commit(); });
   await openProps(page);
-  await page.getByTestId('fx-write').check();
+  await page.getByTestId('fx-write').click(); await accept(page);
   await page.waitForTimeout(300); // تحميل هندسة SVG
   const s0 = await coverage(page, 0.05), s1 = await coverage(page, 1), s2 = await coverage(page, 3);
   expect(s1).toBeGreaterThan(s0);
   expect(s2).toBeGreaterThan(s1);
-  await page.getByTestId('fx-write').uncheck();
+  await page.getByTestId('fx-write').click(); await accept(page);
   const target = await ed(page, (e) => e.project.assets.find((a) => a.name === 'شكل').id);
-  await page.getByTestId('fx-morph').selectOption(target);
+  await page.getByTestId('fx-morph').selectOption(target); await accept(page);
   await ed(page, (e) => { const l = e.layer; l.fx.morph.start = 0; l.fx.morph.dur = 2; e.commit(); });
   await page.waitForTimeout(300);
   const m0 = await coverage(page, 0), m1 = await coverage(page, 1), m2 = await coverage(page, 2.5);

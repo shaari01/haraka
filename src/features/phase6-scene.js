@@ -154,7 +154,10 @@ registerLayerRenderer('particles', (c, { asset, t }) => {
 
 libraryCreators.push({ icon: 'sparkle', label: 'جزيئات وإضاءة', testid: 'new-fx', create: (ed) => {
   const p = ed.project;
-  const pick = (asset, blend) => { p.assets.push(asset); const l = ed.editor.library.addInstance(asset, false); l.props.scale = 1; if (blend) l.blend = blend; ed.commit(); ed.editor.closePanels?.(); };
+  const pick = (asset, blend) => {
+    ed.editor.closePanels?.();
+    ed.tryChange(asset.name, () => { ed.project.assets.push(asset); const l = ed.editor.library.addInstance(asset, false); l.props.scale = 1; if (blend) l.blend = blend; }, { group: 'fx-add' });
+  };
   menu(document.querySelector('[data-testid=new-fx]'), [
     ...Object.entries(PARTICLES).map(([kind, d]) => ({ icon: 'sparkle', label: 'جزيئات: ' + d.label, testid: 'fx-' + kind, onClick: () => pick(createAsset('particles', { name: d.label, kind, count: d.count, width: p.width, height: p.height, color: kind === 'sparkle' ? '#fff3b0' : '#ffffff', icon: 'sparkle' })) })),
     { icon: 'star', label: 'إضاءة متحركة (بقعة ضوء)', testid: 'fx-light', onClick: () => pick(createAsset('light', { name: 'إضاءة', width: Math.round(Math.max(p.width, p.height) * 0.7), height: Math.round(Math.max(p.width, p.height) * 0.7), color: '#ffd27a', intensity: 0.8, icon: 'star' }), 'screen') }

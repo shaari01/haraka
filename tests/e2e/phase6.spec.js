@@ -141,6 +141,7 @@ test('المرحلة 6: الكاميرا والعمق، والرسم إطارً�
     await page.getByTestId('new-fx').click();
     await page.getByTestId(fx).click();
     await closePanels(page);
+    await page.getByTestId('try-ok').click();
     expect(await ed(page, (e) => e.project.layers.length)).toBe(n + 1);
   }
   expect(await ed(page, (e) => e.project.layers.slice(-2).map((l) => e.project.assets.find((a) => a.id === l.assetId).type))).toEqual(['light', 'particles']);

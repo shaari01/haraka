@@ -127,10 +127,10 @@ export class Stage {
     const l = this.ed.layer;
     if (!l || l.locked) return [];
     const pts = layerCorners(this.ed.project, l, this.ed.time).map(([x, y]) => apply(this.view, x, y));
-    const r = 13 * this.dpr;
+    const r = 8 * this.dpr; // مقبض صغير مرئي، ومنطقة لمس أوسع منه (22 بكسل)
     // العناصر الصغيرة على الشاشة: أبعد المقابض عن المركز حتى يبقى العنصر قابلًا للسحب
     const ccx = (pts[0][0] + pts[2][0]) / 2, ccy = (pts[0][1] + pts[2][1]) / 2;
-    const minD = 46 * this.dpr;
+    const minD = 40 * this.dpr;
     const spread = ([x, y]) => { const dx = x - ccx, dy = y - ccy, d = Math.hypot(dx, dy) || 1; return d >= minD ? [x, y] : [ccx + dx / d * minD, ccy + dy / d * minD]; };
     const out = pts.map((p0, i) => { const [x, y] = spread(p0); return { x, y, r, kind: 'scale', i }; });
     // مقبض الدوران فوق منتصف الحافة العليا
@@ -195,7 +195,7 @@ export class Stage {
     }
     // المقابض
     for (const hd of this.handles()) {
-      if (Math.hypot(hd.x - pt.sx, hd.y - pt.sy) <= hd.r * 1.8) {
+      if (Math.hypot(hd.x - pt.sx, hd.y - pt.sy) <= 22 * this.dpr) {
         const l = ed.layer;
         const s = evalLayer(l, ed.time);
         const m = fullMatrix(ed.project, l, ed.time);

@@ -34,6 +34,7 @@ export class EditorState {
 
   /** يسجل تغييرًا في التاريخ ويحفظ تلقائيًا */
   commit() {
+    if (this.trial) { this.trial = null; this.emit('trial'); } // أي تعديل آخر يعتمد المعاينة الجارية
     this.project.updated = Date.now();
     if (this.history.push(this.project)) {
       this.scheduleSave();
@@ -41,6 +42,52 @@ export class EditorState {
     }
     this.emit('change');
   }
+  /**
+   * معاينة قبل الاعتماد: يطبّق التغيير ويشغّله على المعاينة، ولا يُسجَّل إلا بـ ✓.
+   * fn تُستدعى بعد إلغاء أي معاينة سابقة، فيجب أن تبحث عن الطبقة بمعرّفها من ed.project.
+   */
+  tryChange(label, fn, { play = true, group = label } = {}) {
+    let prev = this.trial;
+    // تجربة بديل من المجموعة نفسها تستبدل السابقة؛ أما أداة أخرى فتعتمد السابقة أولًا
+    if (prev && prev.group !== group) { this.acceptTry(); prev = null; }
+    const t0 = prev ? prev.t0 : this.time;
+    if (prev) { this.emit('trial-stop'); this.revertTrial(); this.setTime(t0); }
+    fn(this);
+    this.trial = { label, t0, group };
+    this.emit('change');
+    this.emit('select');
+    this.emit('trial');
+    if (play) this.emit('trial-play');
+  }
+  acceptTry() {
+    if (!this.trial) return;
+    const t0 = this.trial.t0;
+    this.emit('trial-stop');
+    this.trial = null;
+    this.commit();
+    this.setTime(t0);
+    this.emit('trial');
+  }
+  cancelTry() {
+    if (!this.trial) return;
+    const t0 = this.trial.t0;
+    this.emit('trial-stop');
+    this.revertTrial();
+    this.trial = null;
+    this.setTime(t0);
+    this.emit('trial');
+  }
+  revertTrial() {
+    const p = JSON.parse(this.history.current);
+    this.project = p;
+    if (this.selectedLayerId && !getLayer(p, this.selectedLayerId)) this.selectedLayerId = null;
+    this.cache.ensureAll(p);
+    this.emit('change');
+    this.emit('select');
+  }
+  /** الطبقة بمعرّفها في المشروع الحالي (آمن بعد إلغاء معاينة) */
+  layerById(id) { return getLayer(this.project, id); }
+
   /** تحديث مؤقت أثناء السحب (بلا تسجيل) */
   live() { this.emit('change'); }
 
@@ -58,6 +105,7 @@ export class EditorState {
   }
 
   undo() {
+    if (this.trial) return this.cancelTry();
     const s = this.history.undo();
     if (s) this.replaceProject(s);
   }

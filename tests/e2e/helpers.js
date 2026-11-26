@@ -63,3 +63,9 @@ export async function coverage(page, t) {
     return n / (c.width * c.height);
   }, t);
 }
+
+/** اعتماد المعاينة الجارية (زر ✓) */
+export async function accept(page) {
+  await page.getByTestId('try-ok').click();
+  await page.getByTestId('trial-bar').waitFor({ state: 'hidden' });
+}
